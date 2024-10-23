@@ -15,10 +15,14 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping(path = "/orders")
+@RequestMapping(path = "/core")
 public class OrderController {
     private final OrderService orderService;
 
+    @GetMapping("/helloOrder")
+    public String helloOrder() {
+        return "Hello from order service";
+    }
     @GetMapping
     public ResponseEntity<List<OrderDTO>> getAllOrders() {
         log.info("Fetching all orders via OrderController");
