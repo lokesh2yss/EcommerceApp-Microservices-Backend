@@ -1,5 +1,7 @@
 package com.codingshuttle.ecommerce.inventory_service.services;
 
+import com.codingshuttle.ecommerce.inventory_service.dtos.OrderRequestDTO;
+import com.codingshuttle.ecommerce.inventory_service.dtos.OrderRequestItemDTO;
 import com.codingshuttle.ecommerce.inventory_service.dtos.ProductDTO;
 import com.codingshuttle.ecommerce.inventory_service.entities.Product;
 import com.codingshuttle.ecommerce.inventory_service.repositories.ProductRepository;
@@ -7,7 +9,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,4 +40,25 @@ public class ProductService {
                 new RuntimeException("Inventory not found with id: "+productId));
     }
 
+    @Transactional
+    public BigDecimal reduceStocks(OrderRequestDTO orderRequestDTO) {
+        log.info("Reducing the stocks");
+        BigDecimal totalPrice = BigDecimal.ZERO;
+        for(OrderRequestItemDTO itemDTO: orderRequestDTO.getItems()) {
+            Long productId = itemDTO.getProductId();
+            int quantity = itemDTO.getQuantity();
+            Product product = productRepository.findById(productId).orElseThrow(() ->
+                    new RuntimeException("Product not found with id: "+productId));
+
+            if(product.getStock() < quantity) {
+                throw new RuntimeException("Insufficient stock for product with id: "+productId);
+            }
+            product.setStock(product.getStock()-quantity);
+            productRepository.save(product);
+            BigDecimal curItemPrice = product.getPrice().multiply(BigDecimal.valueOf(quantity));
+            totalPrice = totalPrice.add(curItemPrice);
+
+        }
+        return totalPrice;
+    }
 }

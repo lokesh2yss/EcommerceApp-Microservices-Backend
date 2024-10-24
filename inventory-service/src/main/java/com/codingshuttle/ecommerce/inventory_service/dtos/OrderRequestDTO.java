@@ -1,4 +1,4 @@
-package com.codingshuttle.ecommerce.order_service.dtos;
+package com.codingshuttle.ecommerce.inventory_service.dtos;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +11,5 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderRequestDTO {
-    private Long id;
     private List<OrderRequestItemDTO> items;
-    private BigDecimal totalPrice;
 }
