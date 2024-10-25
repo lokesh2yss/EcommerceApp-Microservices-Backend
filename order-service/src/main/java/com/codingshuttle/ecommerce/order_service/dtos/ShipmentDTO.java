@@ -1,7 +1,9 @@
-package com.codingshuttle.ecommerce.shipping_service.dtos;
+package com.codingshuttle.ecommerce.order_service.dtos;
 
-import com.codingshuttle.ecommerce.shipping_service.entities.enums.Carrier;
-import com.codingshuttle.ecommerce.shipping_service.entities.enums.ShipmentStatus;
+
+import com.codingshuttle.ecommerce.order_service.entities.enums.Carrier;
+import com.codingshuttle.ecommerce.order_service.entities.enums.ShipmentStatus;
+import jakarta.annotation.Nonnull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

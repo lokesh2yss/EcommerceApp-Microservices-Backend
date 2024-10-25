@@ -1,8 +1,10 @@
 package com.codingshuttle.ecommerce.order_service.services;
 
 import com.codingshuttle.ecommerce.order_service.clients.InventoryOpenFeignClient;
+import com.codingshuttle.ecommerce.order_service.clients.ShipmentOpenFeignClient;
 import com.codingshuttle.ecommerce.order_service.dtos.OrderDTO;
 import com.codingshuttle.ecommerce.order_service.dtos.OrderRequestDTO;
+import com.codingshuttle.ecommerce.order_service.dtos.ShipmentDTO;
 import com.codingshuttle.ecommerce.order_service.entities.Order;
 import com.codingshuttle.ecommerce.order_service.entities.OrderItem;
 import com.codingshuttle.ecommerce.order_service.entities.enums.OrderStatus;
@@ -28,6 +30,7 @@ public class OrderService {
     private final ModelMapper modelMapper;
     private final OrderRepository orderRepository;
     private final InventoryOpenFeignClient inventoryOpenFeignClient;
+    private final ShipmentOpenFeignClient shipmentOpenFeignClient;
 
     public List<OrderDTO> getAllOrders() {
         log.info("Fetching all orders");
@@ -47,7 +50,7 @@ public class OrderService {
     }
 
     @Transactional
-    @CircuitBreaker(name="inventoryCircuitBreaker", fallbackMethod = "createOrderCircuitBreakerFallback")
+    //@CircuitBreaker(name="inventoryCircuitBreaker", fallbackMethod = "createOrderCircuitBreakerFallback")
 //    @Retry(name="inventoryRetry", fallbackMethod = "createOrderFallback")
 //    @RateLimiter(name="inventoryRateLimiter", fallbackMethod = "createOrderRateLimiterFallback")
     public OrderDTO createOrder(OrderRequestDTO orderRequestDTO) {
@@ -60,8 +63,14 @@ public class OrderService {
         newOrder.setOrderStatus(OrderStatus.CONFIRMED);
         newOrder.setTotalPrice(totalPrice);
         Order savedOrder = orderRepository.save(newOrder);
+        orderRequestDTO.getShipmentDetails().setOrderId(savedOrder.getId());
+        log.info("Trying to create a shipment for the order with details: {}", orderRequestDTO.getShipmentDetails());
+        ShipmentDTO shipmentDTO = shipmentOpenFeignClient.createShipment(orderRequestDTO.getShipmentDetails());
 
-        return modelMapper.map(savedOrder, OrderDTO.class);
+        OrderDTO orderDTO =  modelMapper.map(savedOrder, OrderDTO.class);
+        orderDTO.setShipment(shipmentDTO);
+
+        return orderDTO;
     }
     public OrderDTO createOrderCircuitBreakerFallback(OrderRequestDTO orderRequestDTO, Throwable throwable) {
         log.error("createOrder method failed due to: {} and createOrderCircuitBreakerFallback was called", throwable.getMessage());

@@ -22,6 +22,7 @@ public class ShipmentService {
     private final ModelMapper modelMapper;
 
     public ShipmentDTO createShipment(ShipmentRequestDTO shipmentRequestDTO) {
+        log.info("Trying to create the shipment for the given order: {}", shipmentRequestDTO);
         Shipment shipment = modelMapper.map(shipmentRequestDTO, Shipment.class);
         shipment.setShipmentStatus(ShipmentStatus.SHIPPED);
         shipment.setCarrier(Carrier.UPS);
@@ -30,7 +31,8 @@ public class ShipmentService {
         shipment.setTrackingNumber(createTrackingNumber());
 
         Shipment savedShipment = shipmentRepository.save(shipment);
-        modelMapper.map(savedShipment, ShipmentDTO.class);
+        log.info("Successfully created shipment: {}", savedShipment);
+        return modelMapper.map(savedShipment, ShipmentDTO.class);
     }
 
     private String createTrackingNumber() {

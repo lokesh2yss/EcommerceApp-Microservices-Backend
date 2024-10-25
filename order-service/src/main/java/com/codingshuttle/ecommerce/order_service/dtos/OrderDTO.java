@@ -14,4 +14,5 @@ public class OrderDTO {
     private OrderStatus orderStatus;
     private BigDecimal totalPrice;
     private List<OrderItemDTO> items;
+    private ShipmentDTO shipment;
 }

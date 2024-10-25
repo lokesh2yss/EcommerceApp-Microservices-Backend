@@ -27,8 +27,4 @@ public class ShipmentRequestDTO {
     private AddressDTO originAddress;
 
     private AddressDTO destinationAddress;
-
-    private LocalDate shippedOn;
-
-    private LocalDate expectedDeliveryDate;
 }
