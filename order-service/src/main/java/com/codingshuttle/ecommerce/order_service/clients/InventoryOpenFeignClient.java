@@ -1,7 +1,9 @@
 package com.codingshuttle.ecommerce.order_service.clients;
 
+import com.codingshuttle.ecommerce.order_service.dtos.OrderDTO;
 import com.codingshuttle.ecommerce.order_service.dtos.OrderRequestDTO;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -12,4 +14,7 @@ public interface InventoryOpenFeignClient {
 
     @PutMapping(path = "/products/reduce-stocks")
     BigDecimal reduceStocks(@RequestBody OrderRequestDTO orderRequestDTO);
+
+    @DeleteMapping(path = "/products/restock")
+    boolean restockForCancelledOrder(@RequestBody OrderRequestDTO orderRequestDTO);
 }

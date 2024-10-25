@@ -27,6 +27,11 @@ public class OrderController {
         OrderDTO orderDTO = orderService.createOrder(orderRequestDTO);
         return ResponseEntity.ok(orderDTO);
     }
+    @DeleteMapping(path = "/cancel-order/{orderId}")
+    public ResponseEntity<OrderDTO> cancelOrder(@PathVariable Long orderId) {
+        OrderDTO orderDTO = orderService.cancelOrder(orderId);
+        return ResponseEntity.ok(orderDTO);
+    }
     @GetMapping
     public ResponseEntity<List<OrderDTO>> getAllOrders() {
         log.info("Fetching all orders via OrderController");

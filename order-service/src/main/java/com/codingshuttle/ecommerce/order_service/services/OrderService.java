@@ -75,4 +75,30 @@ public class OrderService {
         log.error("createOrder method failed due to: {} and createOrderFallback was called", throwable.getMessage());
         return new OrderDTO();
     }
+
+
+    @Transactional
+    @CircuitBreaker(name="inventoryCircuitBreaker", fallbackMethod = "cancelOrder")
+//    @Retry(name="inventoryRetry", fallbackMethod = "cancelOrder")
+//    @RateLimiter(name="inventoryRateLimiter", fallbackMethod = "cancelOrder")
+    public OrderDTO cancelOrder(Long orderId) {
+        log.info("Trying to cancel an order with id: {}, while restocking the stock in inventory service", orderId);
+        Order order = orderRepository.findById(orderId).orElseThrow(() ->
+                new RuntimeException("Order not found with id: "+orderId));
+        if(order.getOrderStatus().equals(OrderStatus.CANCELLED)) {
+            throw new RuntimeException("Order already cancelled. Cannot re-cancel");
+        }
+        OrderRequestDTO orderRequestDTO = modelMapper.map(order, OrderRequestDTO.class);
+        boolean restockSuccessful = inventoryOpenFeignClient.restockForCancelledOrder(orderRequestDTO);
+        order.getItems().clear();
+        order.setOrderStatus(OrderStatus.CANCELLED);
+        Order savedOrder = orderRepository.save(order);
+
+        return modelMapper.map(savedOrder, OrderDTO.class);
+    }
+
+    public OrderDTO cancelOrder(Long orderId, Throwable throwable) {
+        log.error("Inside cancelOrderFallback due to: "+throwable.getMessage());
+        return new OrderDTO();
+    }
 }

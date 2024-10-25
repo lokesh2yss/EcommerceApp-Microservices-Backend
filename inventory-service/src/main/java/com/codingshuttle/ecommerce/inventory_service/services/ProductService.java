@@ -61,4 +61,23 @@ public class ProductService {
         }
         return totalPrice;
     }
+
+    @Transactional
+    public boolean restockForCancelledOrder(OrderRequestDTO orderRequestDTO) {
+        log.info("Restocking the order items for the cancelled order");
+        for(OrderRequestItemDTO itemDTO: orderRequestDTO.getItems()) {
+            Long productId = itemDTO.getProductId();
+            int quantity = itemDTO.getQuantity();
+            Product product = productRepository.findById(productId).orElseThrow(() ->
+                    new RuntimeException("Product not found with id: "+productId));
+
+            if(quantity < 0) {
+                throw new RuntimeException("Quantity cannot be a negative number for product with id:  "+productId);
+            }
+            product.setStock(product.getStock()+quantity);
+            productRepository.save(product);
+
+        }
+        return true;
+    }
 }

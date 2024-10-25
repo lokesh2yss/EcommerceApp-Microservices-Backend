@@ -54,4 +54,9 @@ public class ProductController {
     public ResponseEntity<BigDecimal> reduceStocks(@RequestBody OrderRequestDTO orderRequestDTO) {
         return ResponseEntity.ok(productService.reduceStocks(orderRequestDTO));
     }
+
+    @DeleteMapping("/restock")
+    public ResponseEntity<Boolean> restockForCancelledOrder(@RequestBody OrderRequestDTO orderRequestDTO) {
+        return ResponseEntity.ok(productService.restockForCancelledOrder(orderRequestDTO));
+    }
 }
