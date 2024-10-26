@@ -14,14 +14,21 @@ resilience4j:
   retry:
     configs:
       default:
-        maxRetryAttempts: 3
+        maxRetryAttempts: 5
         waitDuration: 100ms
     instances:
+      shipmentRetry:
+        baseConfig: default
+        waitDuration: 200ms
+        retryExceptions:
+          - feign.FeignException
+        #maxRetryAttempts: 3
+        #waitDuration: 3s
       inventoryRetry:
         baseConfig: default
         waitDuration: 200ms
-        #maxRetryAttempts: 3
-        #waitDuration: 3s
+        retryExceptions:
+          - feign.FeignException
   ratelimiter:
     configs:
       default:
@@ -44,3 +51,4 @@ resilience4j:
         waitDurationInOpenState: 10s   # Time the circuit stays OPEN before moving to HALF_OPEN
         permittedNumberOfCallsInHalfOpenState: 3  # Number of test calls in HALF_OPEN state
         eventConsumerBufferSize: 10    # Buffer size for event logs
+

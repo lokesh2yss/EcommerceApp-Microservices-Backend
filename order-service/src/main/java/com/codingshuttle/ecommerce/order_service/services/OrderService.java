@@ -5,10 +5,12 @@ import com.codingshuttle.ecommerce.order_service.clients.ShipmentOpenFeignClient
 import com.codingshuttle.ecommerce.order_service.dtos.OrderDTO;
 import com.codingshuttle.ecommerce.order_service.dtos.OrderRequestDTO;
 import com.codingshuttle.ecommerce.order_service.dtos.ShipmentDTO;
+import com.codingshuttle.ecommerce.order_service.dtos.ShipmentRequestDTO;
 import com.codingshuttle.ecommerce.order_service.entities.Order;
 import com.codingshuttle.ecommerce.order_service.entities.OrderItem;
 import com.codingshuttle.ecommerce.order_service.entities.enums.OrderStatus;
 import com.codingshuttle.ecommerce.order_service.repositories.OrderRepository;
+import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
@@ -51,7 +53,7 @@ public class OrderService {
 
     @Transactional
     //@CircuitBreaker(name="inventoryCircuitBreaker", fallbackMethod = "createOrderCircuitBreakerFallback")
-//    @Retry(name="inventoryRetry", fallbackMethod = "createOrderFallback")
+   @Retry(name="inventoryRetry", fallbackMethod = "createOrderFallback")
 //    @RateLimiter(name="inventoryRateLimiter", fallbackMethod = "createOrderRateLimiterFallback")
     public OrderDTO createOrder(OrderRequestDTO orderRequestDTO) {
         log.info("Trying to create an order while reducing the stock in inventory service");
@@ -64,13 +66,22 @@ public class OrderService {
         newOrder.setTotalPrice(totalPrice);
         Order savedOrder = orderRepository.save(newOrder);
         orderRequestDTO.getShipmentDetails().setOrderId(savedOrder.getId());
-        log.info("Trying to create a shipment for the order with details: {}", orderRequestDTO.getShipmentDetails());
-        ShipmentDTO shipmentDTO = shipmentOpenFeignClient.createShipment(orderRequestDTO.getShipmentDetails());
-
+        ShipmentDTO shipmentDTO = createShipmentForOrder(orderRequestDTO.getShipmentDetails());
         OrderDTO orderDTO =  modelMapper.map(savedOrder, OrderDTO.class);
         orderDTO.setShipment(shipmentDTO);
 
         return orderDTO;
+    }
+
+    @Retry(name = "shipmentRetry", fallbackMethod = "createShipmentForOrderFallback")
+    public ShipmentDTO createShipmentForOrder(ShipmentRequestDTO shipmentRequestDTO) {
+        log.info("Trying to create a shipment for the order with details: {}", shipmentRequestDTO);
+        return shipmentOpenFeignClient.createShipment(shipmentRequestDTO);
+    }
+
+    public ShipmentDTO createShipmentForOrderFallback(ShipmentRequestDTO shipmentRequestDTO, Throwable throwable) {
+        log.error("shipment creation failed due to: {}", throwable.getMessage());
+        return new ShipmentDTO();
     }
     public OrderDTO createOrderCircuitBreakerFallback(OrderRequestDTO orderRequestDTO, Throwable throwable) {
         log.error("createOrder method failed due to: {} and createOrderCircuitBreakerFallback was called", throwable.getMessage());
