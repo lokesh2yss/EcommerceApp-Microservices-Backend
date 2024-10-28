@@ -20,6 +20,9 @@ spring:
           filters:
             - StripPrefix=2
             - name: Authentication
+            - name: Authorization
+              args:
+                roles: "ADMIN,SUPER_ADMIN"
 
         - id: order-service
           uri: lb://ORDER-SERVICE
@@ -29,6 +32,9 @@ spring:
             - StripPrefix=2
             - name: LoggingOrderGatewayFilter
             - name: Authentication
+            - name: Authorization
+              args:
+                roles: "ADMIN,SUPER_ADMIN"
 
         - id: shipping-service
           uri: lb://SHIPPING-SERVICE
@@ -37,3 +43,6 @@ spring:
           filters:
             - StripPrefix=2
             - name: Authentication
+            - name: Authorization
+              args:
+                roles: "ADMIN,SUPER_ADMIN"
