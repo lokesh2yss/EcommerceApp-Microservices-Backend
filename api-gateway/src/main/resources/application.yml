@@ -4,6 +4,8 @@ eureka:
   client:
     service-url:
       defaultZone: http://localhost:8761/eureka/
+jwt:
+  secretKey: wkoegfn23FFufwndEo04R0R9NO2URNIRPDM30E3IRRJMFDMiid3io3irdixPODDMOEOID3FNCLKKDMFNOSDCC
 
 spring:
   application:
@@ -17,6 +19,7 @@ spring:
             - Path=/api/v1/inventory/**
           filters:
             - StripPrefix=2
+            - name: Authentication
 
         - id: order-service
           uri: lb://ORDER-SERVICE
@@ -24,6 +27,8 @@ spring:
             - Path=/api/v1/orders/**
           filters:
             - StripPrefix=2
+            - name: LoggingOrderGatewayFilter
+            - name: Authentication
 
         - id: shipping-service
           uri: lb://SHIPPING-SERVICE
@@ -31,3 +36,4 @@ spring:
             - Path=/api/v1/shipping/**
           filters:
             - StripPrefix=2
+            - name: Authentication

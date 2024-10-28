@@ -26,7 +26,7 @@ public class ProductController {
     private final OrderFeignClient orderFeignClient;
 
     @GetMapping("/fetchOrders")
-    public String fetchOrders() {
+    public String fetchOrders(@RequestHeader("X-User-Id") String userId) {
         /*ServiceInstance serviceInstance = discoveryClient.getInstances("order-service").getFirst();
         log.info(serviceInstance.getUri().toString());
         return restClient.get()
@@ -35,6 +35,7 @@ public class ProductController {
                 .body(String.class);
 
          */
+        log.info("userId is: {}", userId );
         return orderFeignClient.helloOrder();
 
     }
