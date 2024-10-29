@@ -4,8 +4,6 @@ pom.xml.releaseBackup
 pom.xml.versionsBackup
 pom.xml.next
 release.properties
-config-server/src/main/resources/application.yml
-config-server/src/main/resources/application.properties
 
 config-server/src/main/resources/application.yml
 config-server/src/main/resources/application.properties
@@ -19,6 +17,7 @@ inventory-service/src/main/resources/application.yml
 inventory-service/src/main/resources/application.properties
 api-gateway/src/main/resources/application.yml
 api-gateway/src/main/resources/application.properties
+logs
 
 
 
