@@ -17,6 +17,8 @@ inventory-service/src/main/resources/application.yml
 inventory-service/src/main/resources/application.properties
 api-gateway/src/main/resources/application.yml
 api-gateway/src/main/resources/application.properties
+notification-service/src/main/resources/application.yml
+notification-service/src/main/resources/application.properties
 logs
 
 
