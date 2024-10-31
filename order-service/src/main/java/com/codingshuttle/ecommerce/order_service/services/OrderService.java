@@ -1,5 +1,6 @@
 package com.codingshuttle.ecommerce.order_service.services;
 
+import com.codingshuttle.ecommerce.inventory_service.events.OrderFulfilledEvent;
 import com.codingshuttle.ecommerce.order_service.clients.InventoryOpenFeignClient;
 import com.codingshuttle.ecommerce.order_service.clients.ShipmentOpenFeignClient;
 import com.codingshuttle.ecommerce.order_service.dtos.OrderDTO;
@@ -75,6 +76,15 @@ public class OrderService {
         return orderDTO;
     }
 
+    public void updateOrderStatus(OrderFulfilledEvent orderFulfilledEvent) {
+        log.info("Fetching order with id: {}", orderFulfilledEvent.getOrderId());
+        Order order = orderRepository.findById(orderFulfilledEvent.getOrderId()).
+                orElseThrow(() ->
+                        new RuntimeException("Order not found with id: "+orderFulfilledEvent.getOrderId()));
+        order.setTotalPrice(orderFulfilledEvent.getTotalPrice());
+        order.setOrderStatus(OrderStatus.FULFILLED);
+        log.info("Successfully updated order status to fulfilled");
+    }
     public OrderDTO createOrder(OrderRequestDTO orderRequestDTO) {
         log.info("Trying to create an order while reducing the stock in inventory service");
         //BigDecimal totalPrice = inventoryOpenFeignClient.reduceStocks(orderRequestDTO);
@@ -90,6 +100,7 @@ public class OrderService {
         OrderDTO orderDTO =  modelMapper.map(savedOrder, OrderDTO.class);
         //orderDTO.setShipment(shipmentDTO);
         OrderCreatedEvent orderCreatedEvent = modelMapper.map(orderRequestDTO, OrderCreatedEvent.class);
+        orderCreatedEvent.setId(savedOrder.getId());
 
         kafkaTemplate.send(AppConstants.ORDER_CREATED_TOPIC, orderCreatedEvent.getId(), orderCreatedEvent);
 
