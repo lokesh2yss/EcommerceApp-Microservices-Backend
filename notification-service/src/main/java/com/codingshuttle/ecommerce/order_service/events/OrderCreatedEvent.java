@@ -1,18 +1,16 @@
-package com.codingshuttle.ecommerce.order_service.dtos;
+package com.codingshuttle.ecommerce.order_service.events;
 
-import lombok.AllArgsConstructor;
+import com.codingshuttle.ecommerce.order_service.dtos.OrderRequestItemDTO;
+import com.codingshuttle.ecommerce.order_service.dtos.ShipmentRequestDTO;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @ToString
-public class OrderRequestDTO {
+public class OrderCreatedEvent {
     private Long id;
     private List<OrderRequestItemDTO> items;
     private BigDecimal totalPrice;

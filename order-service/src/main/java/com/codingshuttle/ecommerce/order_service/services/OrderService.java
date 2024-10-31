@@ -9,14 +9,15 @@ import com.codingshuttle.ecommerce.order_service.dtos.ShipmentRequestDTO;
 import com.codingshuttle.ecommerce.order_service.entities.Order;
 import com.codingshuttle.ecommerce.order_service.entities.OrderItem;
 import com.codingshuttle.ecommerce.order_service.entities.enums.OrderStatus;
+import com.codingshuttle.ecommerce.order_service.events.OrderCreatedEvent;
 import com.codingshuttle.ecommerce.order_service.repositories.OrderRepository;
-import feign.FeignException;
+import com.codingshuttle.ecommerce.order_service.utils.AppConstants;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +34,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final InventoryOpenFeignClient inventoryOpenFeignClient;
     private final ShipmentOpenFeignClient shipmentOpenFeignClient;
+    private final KafkaTemplate<Long, OrderCreatedEvent> kafkaTemplate;
 
     public List<OrderDTO> getAllOrders() {
         log.info("Fetching all orders");
@@ -55,7 +57,7 @@ public class OrderService {
     //@CircuitBreaker(name="inventoryCircuitBreaker", fallbackMethod = "createOrderCircuitBreakerFallback")
    @Retry(name="inventoryRetry", fallbackMethod = "createOrderFallback")
 //    @RateLimiter(name="inventoryRateLimiter", fallbackMethod = "createOrderRateLimiterFallback")
-    public OrderDTO createOrder(OrderRequestDTO orderRequestDTO) {
+    public OrderDTO createOrderWithoutKafka(OrderRequestDTO orderRequestDTO) {
         log.info("Trying to create an order while reducing the stock in inventory service");
         BigDecimal totalPrice = inventoryOpenFeignClient.reduceStocks(orderRequestDTO);
         Order newOrder = modelMapper.map(orderRequestDTO, Order.class);
@@ -69,6 +71,27 @@ public class OrderService {
         ShipmentDTO shipmentDTO = createShipmentForOrder(orderRequestDTO.getShipmentDetails());
         OrderDTO orderDTO =  modelMapper.map(savedOrder, OrderDTO.class);
         orderDTO.setShipment(shipmentDTO);
+
+        return orderDTO;
+    }
+
+    public OrderDTO createOrder(OrderRequestDTO orderRequestDTO) {
+        log.info("Trying to create an order while reducing the stock in inventory service");
+        //BigDecimal totalPrice = inventoryOpenFeignClient.reduceStocks(orderRequestDTO);
+        Order newOrder = modelMapper.map(orderRequestDTO, Order.class);
+        for(OrderItem orderItem: newOrder.getItems()) {
+            orderItem.setOrder(newOrder);
+        }
+        newOrder.setOrderStatus(OrderStatus.PENDING);
+        //newOrder.setTotalPrice(totalPrice);
+        Order savedOrder = orderRepository.save(newOrder);
+        //orderRequestDTO.getShipmentDetails().setOrderId(savedOrder.getId());
+        //ShipmentDTO shipmentDTO = createShipmentForOrder(orderRequestDTO.getShipmentDetails());
+        OrderDTO orderDTO =  modelMapper.map(savedOrder, OrderDTO.class);
+        //orderDTO.setShipment(shipmentDTO);
+        OrderCreatedEvent orderCreatedEvent = modelMapper.map(orderRequestDTO, OrderCreatedEvent.class);
+
+        kafkaTemplate.send(AppConstants.ORDER_CREATED_TOPIC, orderCreatedEvent.getId(), orderCreatedEvent);
 
         return orderDTO;
     }

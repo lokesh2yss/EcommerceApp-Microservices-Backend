@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Data
+@ToString
 public class OrderItemDTO {
     private Long id;
     private Long productId;
