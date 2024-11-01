@@ -1,7 +1,7 @@
 package com.codingshuttle.ecommerce.inventory_service.events;
 
-import com.codingshuttle.ecommerce.inventory_service.enums.OrderStatus;
 import com.codingshuttle.ecommerce.inventory_service.dtos.OrderRequestItemDTO;
+import com.codingshuttle.ecommerce.order_service.entities.enums.OrderStatus;
 import com.codingshuttle.ecommerce.shipping_service.dtos.ShipmentRequestDTO;
 import lombok.Data;
 import lombok.ToString;

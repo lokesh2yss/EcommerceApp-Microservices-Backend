@@ -76,6 +76,16 @@ public class OrderService {
         return orderDTO;
     }
 
+    public void updateOrderStatus(Long orderId, OrderStatus orderStatus) {
+        log.info("Fetching order with id: {}", orderId);
+        Order order = orderRepository.findById(orderId).
+                orElseThrow(() ->
+                        new RuntimeException("Order not found with id: "+orderId));
+        order.setOrderStatus(OrderStatus.SHIPPED);
+        orderRepository.save(order);
+        log.info("Successfully updated order status to shipped");
+    }
+
     public void updateOrderStatus(OrderFulfilledEvent orderFulfilledEvent) {
         log.info("Fetching order with id: {}", orderFulfilledEvent.getOrderId());
         Order order = orderRepository.findById(orderFulfilledEvent.getOrderId()).
@@ -83,6 +93,7 @@ public class OrderService {
                         new RuntimeException("Order not found with id: "+orderFulfilledEvent.getOrderId()));
         order.setTotalPrice(orderFulfilledEvent.getTotalPrice());
         order.setOrderStatus(OrderStatus.FULFILLED);
+        orderRepository.save(order);
         log.info("Successfully updated order status to fulfilled");
     }
     public OrderDTO createOrder(OrderRequestDTO orderRequestDTO) {
@@ -101,7 +112,7 @@ public class OrderService {
         //orderDTO.setShipment(shipmentDTO);
         OrderCreatedEvent orderCreatedEvent = modelMapper.map(orderRequestDTO, OrderCreatedEvent.class);
         orderCreatedEvent.setId(savedOrder.getId());
-
+        log.info("OrderCreatedEvent: {}", orderCreatedEvent);
         kafkaTemplate.send(AppConstants.ORDER_CREATED_TOPIC, orderCreatedEvent.getId(), orderCreatedEvent);
 
         return orderDTO;

@@ -8,6 +8,8 @@ public class AppConstants {
 
     public static final String ORDER_OUT_OF_STOCK_TOPIC = "order-out-of-stock-topic";
 
+    public static final String ORDER_SHIPPED_TOPIC = "order-shipped-topic";
+
     private AppConstants() {}
 
 }

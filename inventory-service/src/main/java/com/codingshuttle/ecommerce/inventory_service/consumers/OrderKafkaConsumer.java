@@ -1,13 +1,11 @@
 package com.codingshuttle.ecommerce.inventory_service.consumers;
 
 import com.codingshuttle.ecommerce.inventory_service.dtos.OrderRequestDTO;
+import com.codingshuttle.ecommerce.inventory_service.events.OrderFulfilledEvent;
 import com.codingshuttle.ecommerce.inventory_service.services.ProductService;
-import com.codingshuttle.ecommerce.order_service.dtos.OrderRequestItemDTO;
-import com.codingshuttle.ecommerce.inventory_service.entities.Product;
 import com.codingshuttle.ecommerce.inventory_service.utils.AppConstants;
-import com.codingshuttle.ecommerce.order_service.dtos.enums.OrderStatus;
+import com.codingshuttle.ecommerce.order_service.entities.enums.OrderStatus;
 import com.codingshuttle.ecommerce.order_service.events.OrderCreatedEvent;
-import com.codingshuttle.ecommerce.order_service.events.OrderFulfilledEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
