@@ -1,0 +1,228 @@
+version: "3.8"
+
+services:
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: zipkin
+    ports:
+      - "9411:9411"
+    networks:
+      - ecommerce-network
+  kafka:
+    image: docker.io/bitnami/kafka:3.8
+    container_name: kafka
+    volumes:
+      - "kafka_data:/bitnami"
+    networks:
+      - ecommerce-network
+    environment:
+      # KRaft settings
+      - KAFKA_CFG_NODE_ID=0
+      - KAFKA_CFG_PROCESS_ROLES=controller,broker
+      - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      # Listeners
+      - KAFKA_CFG_LISTENERS=PLAINTEXT://:9092,CONTROLLER://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_CFG_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+  kafbat-ui:
+    container_name: kafbat-ui
+    image: ghcr.io/kafbat/kafka-ui:latest
+    ports:
+      - 8090:8080
+    depends_on:
+      - kafka
+    networks:
+      - ecommerce-network
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_KSQLDBSERVER: http://ksqldb0:8088
+
+  #  kafka-initializer:
+#    image: confluentinc/cp-kafka:latest
+#    command: [ "kafka-storage", "format", "--ignore-formatted", "--cluster-id", "${KAFKA_CLUSTER_ID}", "--config", "/etc/kafka/kraft/server.properties" ]
+#    environment:
+#      KAFKA_CLUSTER_ID: "${KAFKA_CLUSTER_ID}"
+#      KAFKA_NODE_ID: 1
+#      KAFKA_PROCESS_ROLES: broker,controller
+#      KAFKA_LISTENERS: PLAINTEXT://kafka:9092,CONTROLLER://kafka:9093
+#      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+#      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+#      KAFKA_LOG_DIRS: /var/lib/kafka/data
+#    networks:
+#      - ecommerce-network
+#    volumes:
+#      - kafka-data:/var/lib/kafka/data
+#    entrypoint: [ "sh", "-c", "kafka-storage format --ignore-formatted --cluster-id $KAFKA_CLUSTER_ID --config /etc/kafka/kraft/server.properties" ]
+
+#  zookeeper:
+#    image: bitnami/zookeeper:3.7
+#    container_name: zookeeper
+#    environment:
+#      ZOOKEEPER_CLIENT_PORT: 2181
+#      ZOOKEEPER_TICK_TIME: 2000
+#      ZOOKEEPER_SYNC_LIMIT: 2
+#      ALLOW_ANONYMOUS_LOGIN: "yes"  # Allow unauthenticated users to connect
+#    networks:
+#      - ecommerce-network
+#    ports:
+#      - "2181:2181"  # Expose Zookeeper on port 2181
+#
+#
+#  kafka:
+#    image: 'bitnami/kafka:3.3.2-debian-11-r183'
+#    container_name: kafka
+#    ports:
+#      - "9092:9092"  # Internal listener port
+#      - "9093:9093"  # External listener port
+#      - "29092:29092" # Internal communication within Docker network (optional)
+#    environment:
+#      - KAFKA_BROKER_ID=1
+#      - KAFKA_CFG_LISTENERS=INSIDE://0.0.0.0:9092,OUTSIDE://0.0.0.0:9093  # Both internal and external listeners
+#      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAO=PLAINTEXT:PLAINTEXT  # Set security protocols for each listener
+#      - KAFKA_CFG_LISTENER_NAME_INTERNAL=INSIDE  # Name of the internal listener
+#      - KAFKA_CFG_LISTENER_NAME_EXTERNAL=OUTSIDE  # Name of the external listener
+#      - KAFKA_CFG_ADVERTISED_LISTENERS=INSIDE://kafka:9092,OUTSIDE://localhost:9093  # Advertise the listeners
+#      - KAFKA_CFG_LISTENER_INTERNAL=INSIDE://kafka:9092  # Internal listener for broker communication
+#      - KAFKA_CFG_LISTENER_EXTERNAL=OUTSIDE://localhost:9093  # External listener for client communication
+#      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181  # ZooKeeper connection
+#      - ADVERTISED_HOST=kafka  # Host advertised for Kafka
+#    networks:
+#      - ecommerce-network
+#    healthcheck:
+#      test: [ "CMD-SHELL", "kafka-topics.sh --bootstrap-server 127.0.0.1:9092 --list" ]  # Health check for Kafka
+#      interval: 5s
+#      retries: 10
+#    depends_on:
+#      - zookeeper
+#  kafka-ui:
+#    image: provectuslabs/kafka-ui:latest
+#    container_name: kafka-ui
+#    environment:
+#      KAFKA_CLUSTERS_0_NAME: kafka-cluster
+#      KAFKA_CLUSTERS_0_BOOTSTRAP_SERVERS: "kafka:9092"  # Kafka UI points to internal Kafka listener
+#      KAFKA_CLUSTERS_0_ZOOKEEPER_CONNECT: "zookeeper:2181"  # Kafka UI connects to Zookeeper
+#      KAFKA_CLUSTERS_0_LISTENER_NAME: internal
+#      KAFKA_CLUSTERS_0_LISTENER_PORT: 9092
+#    networks:
+#      - ecommerce-network
+#    ports:
+#      - "8082:8080"
+#    depends_on:
+#      kafka:
+#        condition: service_healthy
+
+  order-db:
+    image: postgres
+    container_name: order-db
+    environment:
+      POSTGRES_DB: orderMicroserviceDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Postgres@123
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+
+    networks:
+      - ecommerce-network
+  inventory-db:
+    image: postgres
+    container_name: inventory-db
+    environment:
+      POSTGRES_DB: inventoryMicroserviceDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Postgres@123
+    volumes:
+      - inventory-db-data:/var/lib/postgresql/data
+
+    networks:
+      - ecommerce-network
+  shipping-db:
+    image: postgres
+    container_name: shipping-db
+    environment:
+      POSTGRES_DB: shippingMicroserviceDB
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Postgres@123
+    volumes:
+      - shipping-db-data:/var/lib/postgresql/data
+
+    networks:
+      - ecommerce-network
+  discovery-service:
+    image: lokesh2yss/discovery-service
+    container_name: discovery-service
+    networks:
+      - ecommerce-network
+  config-server:
+    image: lokesh2yss/config-server
+    container_name: config-server
+    networks:
+      - ecommerce-network
+    depends_on:
+      - discovery-service
+  inventory-service:
+    image: lokesh2yss/inventory-service
+    container_name: inventory-service
+    networks:
+      - ecommerce-network
+    depends_on:
+      - kafka
+      - discovery-service
+      - zipkin
+      - inventory-db
+  order-service:
+    image: lokesh2yss/order-service
+    container_name: order-service
+    networks:
+      - ecommerce-network
+    depends_on:
+      - kafka
+      - discovery-service
+      - zipkin
+      - order-db
+  shipping-service:
+    image: lokesh2yss/shipping-service
+    container_name: shipping-service
+    networks:
+      - ecommerce-network
+    depends_on:
+      - kafka
+      - discovery-service
+      - zipkin
+      - shipping-db
+  notification-service:
+    image: lokesh2yss/notification-service
+    container_name: notification-service
+    networks:
+      - ecommerce-network
+    depends_on:
+      - kafka
+      - discovery-service
+  api-gateway:
+    image: lokesh2yss/api-gateway
+    container_name: api-gateway
+    networks:
+      - ecommerce-network
+    ports:
+      - "8080:8080"
+    depends_on:
+      - kafka
+      - discovery-service
+      - config-server
+      - inventory-service
+      - order-service
+      - shipping-service
+      - notification-service
+
+volumes:
+#  ./data/kafka:
+  kafka_data:
+  order-db-data:
+  inventory-db-data:
+  shipping-db-data:
+
+networks:
+  ecommerce-network:
+    driver: bridge
