@@ -201,7 +201,9 @@ services:
       - ecommerce-network
     depends_on:
       - kafka
+      - config-server
       - discovery-service
+    restart: always
   api-gateway:
     image: lokesh2yss/api-gateway
     container_name: api-gateway
@@ -217,7 +219,7 @@ services:
       - order-service
       - shipping-service
       - notification-service
-
+    restart: always
 volumes:
 #  ./data/kafka:
   kafka_data:
