@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shipping-service
+spec:
+  selector:
+    matchLabels:
+      app: shipping-service
+  template:
+    metadata:
+      labels:
+        app: shipping-service
+    spec:
+      containers:
+      - name: shipping-service
+        image: lokesh2yss/ecommerce-shipping-service
+        resources:
+          limits:
+            memory: "400Mi"
+            cpu: "200m"
+          requests:
+            memory: "200Mi"
+            cpu: "100m"
+        env:
+         - name: SPRING_PROFILES_ACTIVE
+           value: k8s
+         - name: DB_USER
+           value: "postgres"
+         - name: DB_PASSWORD
+           value: "Postgres@123"
+         - name: DB_NAME
+           value: "shippingMicroserviceDB"
+         - name: DB_SERVICE
+           value: "shipping-db-service"
+        ports:
+        - containerPort: 9030
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: shipping-service
+spec:
+  selector:
+    app: shipping-service
+  ports:
+  - port: 80
+    targetPort: 9030
+

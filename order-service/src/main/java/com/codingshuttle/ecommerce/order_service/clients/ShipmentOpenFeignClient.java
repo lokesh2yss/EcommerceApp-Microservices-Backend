@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 
-@FeignClient(name = "shipping-service", path="/shipping")
+@FeignClient(name = "shipping-service", path="/shipping", url = "${SHIPPING_SERVICE_URI:}")
 public interface ShipmentOpenFeignClient {
     @PostMapping(path = "/shipments/create-shipment")
     ShipmentDTO createShipment(@RequestBody ShipmentRequestDTO shipmentRequestDTO);

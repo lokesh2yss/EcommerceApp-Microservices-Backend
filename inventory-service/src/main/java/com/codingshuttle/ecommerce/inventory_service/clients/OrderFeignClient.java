@@ -5,7 +5,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-@FeignClient(name = "order-service", path="/orders", configuration = FeignClientConfig.class)
+@FeignClient(name = "order-service", path="/orders", url = "${ORDER_SERVICE_URI:}", configuration = FeignClientConfig.class)
 public interface OrderFeignClient {
 
     @GetMapping("/core/helloOrder")
