@@ -17,6 +17,10 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
 
+    @GetMapping("/")
+    public ResponseEntity<String> home() {
+        return ResponseEntity.ok("Welcome to the Order Service!");
+    }
     @GetMapping("/helloOrder")
     public String helloOrder(@RequestHeader("X-User-Id") String userId) {
 
