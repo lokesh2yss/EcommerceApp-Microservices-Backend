@@ -17,12 +17,19 @@ spec:
         resources:
           limits:
             memory: "400Mi"
-            cpu: "100m"
+            cpu: "200m"
           requests:
             memory: "200Mi"
-            cpu: "50m"
+            cpu: "150m"
         ports:
         - containerPort: 9411
+        readinessProbe:
+          httpGet:
+            path: /actuator/health
+            port: 9411
+          initialDelaySeconds: 300
+          periodSeconds: 20
+          timeoutSeconds: 20
 
 ---
 
