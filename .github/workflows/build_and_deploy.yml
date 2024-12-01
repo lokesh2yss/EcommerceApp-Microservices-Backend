@@ -58,4 +58,4 @@ jobs:
           ZONE_NAME: ${{ env.GKE_ZONE }}
 
         with:
-          args: -f apply k8s/
+          args: apply -f k8s/
