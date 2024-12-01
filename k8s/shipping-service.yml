@@ -25,13 +25,25 @@ spec:
          - name: SPRING_PROFILES_ACTIVE
            value: k8s
          - name: DB_USER
-           value: "postgres"
+           valueFrom:
+              secretKeyRef:
+                name: my-secret
+                key: SHIPPING_DB_USER
          - name: DB_PASSWORD
-           value: "Postgres@123"
+           valueFrom:
+              secretKeyRef:
+                name: my-secret
+                key: SHIPPING_DB_PASSWORD
          - name: DB_NAME
-           value: "shippingMicroserviceDB"
+           valueFrom:
+              secretKeyRef:
+                name: my-secret
+                key: SHIPPING_DB_NAME
          - name: DB_SERVICE
-           value: "shipping-db-service"
+           valueFrom:
+              configMapKeyRef:
+                name: my-config
+                key: SHIPPING_DB_SERVICE
         ports:
         - containerPort: 9030
 
