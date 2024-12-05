@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.codingshuttle.ecommerce</groupId>
 	<artifactId>inventory-service</artifactId>
-	<version>0.0.4</version>
+	<version>0.0.5</version>
 	<name>inventory-service</name>
 	<description>Inventory Service in Ecommerce App</description>
 	<url/>

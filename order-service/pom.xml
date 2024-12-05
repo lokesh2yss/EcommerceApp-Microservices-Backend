@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.codingshuttle.ecommerce</groupId>
 	<artifactId>order-service</artifactId>
-	<version>0.0.4</version>
+	<version>0.0.5</version>
 	<name>order-service</name>
 	<description>Order Service in Ecommerce App</description>
 	<url/>

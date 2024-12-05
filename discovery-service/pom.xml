@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.codingshuttle.ecommerce</groupId>
 	<artifactId>discovery-service</artifactId>
-	<version>0.0.3</version>
+	<version>0.0.4</version>
 	<packaging>jar</packaging>
 	<name>discovery-service</name>
 	<description>Discovery Service in Ecommerce App</description>
